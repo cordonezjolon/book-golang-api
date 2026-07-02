@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+    
+    tools{
+        go '1.20'
+    }
+    environment{
+        GO111MODULE = 'on'
+    }
+
+    stages {
+        stage('Test') {
+            steps {
+                git 'https://github.com/AdminTurnedDevOps/go-webapp-sample.git'
+                sh 'go test ./...'
+            }
+        }
+        stage('Build our image'){
+            steps{
+                script {
+                    app = docker.build("adminturneddevops/go-webapp-sample")
+                }
+            }
+        }
+        stage('Run our image'){
+            steps{
+                script {
+                    app.run('-p 8080:8080')
+                }
+            }
+        }
+    }
+}

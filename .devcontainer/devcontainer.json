@@ -1,0 +1,24 @@
+{
+  "name": "Go 1.26 + PostgreSQL",
+  "dockerComposeFile": ["docker-compose.yml"],
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "ms-azuretools.vscode-docker",
+        "ms-ossdata.vscode-postgresql"
+      ]
+    }
+  },
+  "settings": {
+    "go.gopath": "/go",
+    "go.useLanguageServer": true,
+    "go.toolsManagement.autoUpdate": true,
+    "go.alternateTools": {}
+  },
+  "postCreateCommand": "go version && psql --version",
+  "remoteUser": "vscode"
+}

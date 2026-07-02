@@ -1,0 +1,30 @@
+### Variables
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### List all books
+GET {{baseUrl}}/books
+
+### Create a new book
+POST {{baseUrl}}/books
+Content-Type: {{contentType}}
+
+{
+  "title": "The Go Programming Language",
+  "author": "Alan Donovan and Brian Kernighan"
+}
+
+### Get a book by ID
+GET {{baseUrl}}/books/1
+
+### Update a book by ID
+PUT {{baseUrl}}/books/1
+Content-Type: {{contentType}}
+
+{
+  "title": "Updated Book Title",
+  "author": "Updated Author Name"
+}
+
+### Delete a book by ID
+DELETE {{baseUrl}}/books/1
