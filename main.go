@@ -10,13 +10,16 @@ import (
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
+
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("no .env file found, using system environment")
+	}
 
-	// Database connection
-	// read from environment variables
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		log.Fatal("DATABASE_URL environment variable is required")
