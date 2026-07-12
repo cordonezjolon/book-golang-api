@@ -11,23 +11,33 @@ pipeline {
     stages {
         stage('Test') {
             steps {
-                git 'https://github.com/AdminTurnedDevOps/go-webapp-sample.git'
-                sh 'go test ./...'
+                git branch: ${env.BRANCH_NAME}, url: 'https://github.com/cordonezjolon/book-golang-api.git'
+                sh 'make test'
             }
         }
         stage('Build our image'){
             steps{
                 script {
-                    app = docker.build("adminturneddevops/go-webapp-sample")
+                    app = docker.build("${DOCKERHUB_USERNAME}/books-go-api:${env.BRANCH_NAME}-${env.BUILD_NUMBER}")
                 }
             }
         }
-        stage('Run our image'){
+        stage('Push our image'){
             steps{
                 script {
-                    app.run('-p 8080:8080')
+                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                        app.push()
+                        app.push("latest")
+                    }
                 }
             }
         }
+        // stage('Run our image'){
+        //     steps{
+        //         script {
+        //             app.run('-p 8080:8080')
+        //         }
+        //     }
+        // }
     }
 }
