@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Test') {
             steps {
-                git branch: ${env.BRANCH_NAME}, url: 'https://github.com/cordonezjolon/book-golang-api.git'
+                git branch: "${env.BRANCH_NAME}", url: 'https://github.com/cordonezjolon/book-golang-api.git'
                 sh 'make test'
             }
         }
