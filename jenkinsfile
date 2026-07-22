@@ -19,7 +19,8 @@ pipeline {
         stage('Build our image'){
             steps{
                 script {
-                    app = docker.build("${DOCKERHUB_CREDS_USR}/books-go-api:${env.BRANCH_NAME}-${env.BUILD_NUMBER}")
+                    def branch = env.GIT_BRANCH.replaceFirst(/^origin\//, '').replaceAll('/', '-')
+                    app = docker.build("${DOCKERHUB_CREDS_USR}/books-go-api:${branch}-${env.BUILD_NUMBER}")
                 }
             }
         }
