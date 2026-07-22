@@ -6,6 +6,7 @@ pipeline {
     }
     environment{
         GO111MODULE = 'on'
+        DOCKERHUB_CREDS = credentials('docker-hub-credentials')
     }
 
     stages {
@@ -18,7 +19,7 @@ pipeline {
         stage('Build our image'){
             steps{
                 script {
-                    app = docker.build("${DOCKERHUB_USERNAME}/books-go-api:${env.BRANCH_NAME}-${env.BUILD_NUMBER}")
+                    app = docker.build("${DOCKERHUB_CREDS_USR}/books-go-api:${env.BRANCH_NAME}-${env.BUILD_NUMBER}")
                 }
             }
         }
