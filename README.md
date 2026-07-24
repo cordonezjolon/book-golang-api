@@ -12,4 +12,4 @@ DATABASE_URL=host=postgres port=5432 user= password= dbname=appdb sslmode=disabl
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `host=localhost port=5432 user=postgres password=secret dbname=mydb sslmode=disable` |
+| `DATABASE_URL` | PostgreSQL connection string | `host=localhost port=5432 user=postgres password= dbname=mydb sslmode=disable` |
