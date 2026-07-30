@@ -1,6 +1,9 @@
+def branch
+def targetEnv
+
 pipeline {
     agent any
-    
+
     tools{
         go '1.26'
     }
@@ -19,7 +22,9 @@ pipeline {
         stage('Build our image'){
             steps{
                 script {
-                    def branch = env.GIT_BRANCH.replaceFirst(/^origin\//, '').replaceAll('/', '-')
+                    branch = env.GIT_BRANCH.replaceFirst(/^origin\//, '').replaceAll('/', '-')
+                    def envMap = ['develop': 'dev', 'staging': 'stage'] // 'main': 'prod' added later
+                    targetEnv = envMap[branch]
                     app = docker.build("${DOCKERHUB_CREDS_USR}/books-go-api:${branch}-${env.BUILD_NUMBER}")
                 }
             }
@@ -34,12 +39,16 @@ pipeline {
                 }
             }
         }
-        // stage('Run our image'){
-        //     steps{
-        //         script {
-        //             app.run('-p 8080:8080')
-        //         }
-        //     }
-        // }
+        stage('Deploy'){
+            agent { label 'ansible-deploy' }
+            when { expression { return targetEnv != null } }
+            steps{
+                sh """
+                    ansible-playbook -i deploy/ansible/inventory/${targetEnv}.yml \
+                        deploy/ansible/deploy.yml \
+                        --extra-vars "image_tag=${branch}-${env.BUILD_NUMBER} dockerhub_user=${DOCKERHUB_CREDS_USR}"
+                """
+            }
+        }
     }
 }

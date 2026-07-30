@@ -1,0 +1,6 @@
+services:
+  {{ image_name }}:
+    image: "{{ dockerhub_user }}/{{ image_name }}:{{ image_tag }}"
+    restart: unless-stopped
+    ports:
+      - "{{ app_port }}:{{ app_port }}"

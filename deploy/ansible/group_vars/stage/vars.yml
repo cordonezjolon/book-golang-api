@@ -1,0 +1,3 @@
+app_port: 8080
+image_name: books-go-api
+deploy_dir: /opt/books-go-api
