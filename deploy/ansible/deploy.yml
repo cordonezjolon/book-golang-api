@@ -1,6 +1,6 @@
 ---
 - name: Deploy books-go-api
-  hosts: targetgo
+  hosts: targetnode
 
   tasks:
     - name: Ensure deploy directory exists
