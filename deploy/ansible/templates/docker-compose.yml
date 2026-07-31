@@ -4,3 +4,5 @@ services:
     restart: unless-stopped
     ports:
       - "{{ app_port }}:{{ app_port }}"
+    environment:
+      DATABASE_URL: "{{ database_url }}"
