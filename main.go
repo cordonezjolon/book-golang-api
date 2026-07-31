@@ -58,6 +58,8 @@ func main() {
 	mux.HandleFunc("/books", bookHandler.HandleBooks)
 	mux.HandleFunc("/books/", bookHandler.HandleBookByID)
 
+	handler := withCORS(mux)
+
 	log.Println("Server is running on port 8080...")
 	log.Println("API endpoints:")
 	log.Println("GET /books - List all books")
@@ -68,7 +70,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:              ":8080",
-		Handler:           mux,
+		Handler:           handler,
 		ReadTimeout:       5 * time.Second,
 		WriteTimeout:      10 * time.Second,
 		IdleTimeout:       120 * time.Second,
@@ -79,4 +81,19 @@ func main() {
 		log.Fatal(err)
 	}
 
+}
+
+func withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
