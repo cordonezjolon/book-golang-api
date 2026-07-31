@@ -3,5 +3,5 @@
 # secrets elsewhere if dev/stage ever need to diverge.
 # When you have real secrets to store here (registry password, app secrets, etc.),
 # add them as plain YAML below, then encrypt the file in place with:
-#   ansible-vault encrypt group_vars/app_servers/vault.yml
+#  ansible-vault encrypt group_vars/app_servers/vault.yml
 # Jenkins would then need a matching --vault-password-file credential to decrypt it at deploy time.
