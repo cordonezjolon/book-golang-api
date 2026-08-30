@@ -25,7 +25,7 @@ pipeline {
                     branch = env.GIT_BRANCH.replaceFirst(/^origin\//, '').replaceAll('/', '-')
                     def envMap = ['develop': 'dev', 'staging': 'stage'] // 'main': 'prod' added later
                     targetEnv = envMap[branch]
-                    app = docker.build("${DOCKERHUB_CREDS_USR}/books-go-api:${branch}-${env.BUILD_NUMBER}")
+                    app = docker.build("${DOCKERHUB_CREDS_USR}/books-go-api:${branch}-${env.BUILD_NUMBER}", "--platform linux/amd64 .")
                 }
             }
         }
@@ -39,19 +39,19 @@ pipeline {
                 }
             }
         }
-        stage('Deploy'){
-            agent { label 'ansible-deploy' }
-            when { expression { return targetEnv != null } }
-            steps{
-                withCredentials([file(credentialsId: 'ansible-vault-password', variable: 'VAULT_PW_FILE')]) {
-                    sh """
-                        ansible-playbook -i deploy/ansible/inventory/${targetEnv}.yml \
-                            deploy/ansible/deploy.yml \
-                            --vault-password-file "\$VAULT_PW_FILE" \
-                            --extra-vars "image_tag=${branch}-${env.BUILD_NUMBER} dockerhub_user=${DOCKERHUB_CREDS_USR}"
-                    """
-                }
-            }
-        }
+        // stage('Deploy'){
+        //     agent { label 'ansible-deploy' }
+        //     when { expression { return targetEnv != null } }
+        //     steps{
+        //         withCredentials([file(credentialsId: 'ansible-vault-password', variable: 'VAULT_PW_FILE')]) {
+        //             sh """
+        //                 ansible-playbook -i deploy/ansible/inventory/${targetEnv}.yml \
+        //                     deploy/ansible/deploy.yml \
+        //                     --vault-password-file "\$VAULT_PW_FILE" \
+        //                     --extra-vars "image_tag=${branch}-${env.BUILD_NUMBER} dockerhub_user=${DOCKERHUB_CREDS_USR}"
+        //             """
+        //         }
+        //     }
+        // }
     }
 }
