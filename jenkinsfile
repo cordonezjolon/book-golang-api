@@ -19,7 +19,7 @@ pipeline {
         MANIFEST_REPO_URL = 'git@github.com:cordonezjolon/cd-process-golang-api.git'
         MANIFEST_REPO_BRANCH = 'develop'
         MANIFEST_REPO_CREDENTIALS = 'manifest-repo-ssh'
-        MANIFEST_FILE = 'apps/books-go-api/deployment.yaml'
+        MANIFEST_FILE = 'apps/books-api/deployment.yaml'
     }
 
     stages {
