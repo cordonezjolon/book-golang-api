@@ -1,51 +1,111 @@
 def branch
 def targetEnv
 
+def imageTag
+
 pipeline {
     agent any
 
-    tools{
+    tools {
         go '1.26'
     }
-    environment{
+
+    environment {
         GO111MODULE = 'on'
         DOCKERHUB_CREDS = credentials('docker-hub-credentials')
+
+        // Update these with the values from your GitOps repo
+        APP_IMAGE = 'cordonezjolon/books-go-api'
+        MANIFEST_REPO_URL = 'git@github.com:cordonezjolon/cd-process-golang-api.git'
+        MANIFEST_REPO_BRANCH = 'develop'
+        MANIFEST_REPO_CREDENTIALS = 'manifest-repo-ssh'
+        MANIFEST_FILE = 'apps/books-go-api/deployment.yaml'
     }
 
     stages {
         stage('Test') {
             steps {
-                // git branch: "${env.BRANCH_NAME}", url: 'https://github.com/cordonezjolon/book-golang-api.git'
                 sh 'make test'
             }
         }
-        stage('Clean & Build') {
-    steps {
-        // Clear dangling build cache that holds the wrong architecture
-        sh 'docker builder prune -f'
 
-    }
-}
-        stage('Build our image'){
-            steps{
+        stage('Clean & Build') {
+            steps {
+                // Clear dangling build cache that holds the wrong architecture
+                sh 'docker builder prune -f'
+            }
+        }
+
+        stage('Build our image') {
+            steps {
                 script {
                     branch = env.GIT_BRANCH.replaceFirst(/^origin\//, '').replaceAll('/', '-')
                     def envMap = ['develop': 'dev', 'staging': 'stage'] // 'main': 'prod' added later
                     targetEnv = envMap[branch]
-                    app = docker.build("${DOCKERHUB_CREDS_USR}/books-go-api:${branch}-${env.BUILD_NUMBER}", "--platform linux/amd64 .")
+                    imageTag = "${branch}-${env.BUILD_NUMBER}"
+                    app = docker.build("${DOCKERHUB_CREDS_USR}/${APP_IMAGE.split('/')[-1]}:${imageTag}", "--platform linux/amd64 .")
                 }
             }
         }
-        stage('Push our image'){
-            steps{
+
+        stage('Push our image') {
+            steps {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
                         app.push()
-                        app.push("latest")
+                        app.push('latest')
                     }
                 }
             }
         }
+
+        stage('Update GitOps manifest') {
+            when {
+                expression { return env.MANIFEST_REPO_URL?.trim() && env.MANIFEST_FILE?.trim() }
+            }
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: env.MANIFEST_REPO_CREDENTIALS, keyFileVariable: 'SSH_KEY')]) {
+                    sh '''
+                        set -e
+                        export GIT_SSH_COMMAND="ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no"
+
+                        git clone "$MANIFEST_REPO_URL" manifest-repo
+                        cd manifest-repo
+                        git checkout "$MANIFEST_REPO_BRANCH" || git checkout -b "$MANIFEST_REPO_BRANCH"
+                        git config user.name "Jenkins"
+                        git config user.email "testwmdev@gmail.com"
+
+                        FILE="$MANIFEST_FILE"
+                        IMAGE_TAG="${branch}-${BUILD_NUMBER}"
+
+                        if [ ! -f "$FILE" ]; then
+                            echo "Manifest file not found: $FILE"
+                            exit 1
+                        fi
+
+                        if grep -Eq "image: .*${APP_IMAGE}:.*" "$FILE"; then
+                            sed -i -E "s#image: .*${APP_IMAGE}:.*#image: ${APP_IMAGE}:${IMAGE_TAG}#g" "$FILE"
+                        elif grep -Eq "newTag: .*" "$FILE"; then
+                            sed -i -E "s#newTag: .*#newTag: ${IMAGE_TAG}#g" "$FILE"
+                        else
+                            echo "Could not find an image field in $FILE"
+                            echo "Expected either 'image: ...' or 'newTag: ...'"
+                            exit 1
+                        fi
+
+                        git add "$FILE"
+                        if git diff --cached --quiet; then
+                            echo "No manifest changes needed."
+                            exit 0
+                        fi
+
+                        git commit -m "chore: bump ${APP_IMAGE} to ${IMAGE_TAG}"
+                        git push origin HEAD:"$MANIFEST_REPO_BRANCH"
+                    '''
+                }
+            }
+        }
+
         // stage('Deploy'){
         //     agent { label 'ansible-deploy' }
         //     when { expression { return targetEnv != null } }
