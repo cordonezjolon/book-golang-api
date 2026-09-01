@@ -77,7 +77,7 @@ pipeline {
                         git config user.email "jenkins@yourdomain.com"
 
                         FILE="$MANIFEST_FILE"
-                        IMAGE_TAG="${branch}-${BUILD_NUMBER}"
+                        IMAGE_TAG="${MANIFEST_REPO_BRANCH}-${BUILD_NUMBER}"
 
                         if [ ! -f "$FILE" ]; then
                             echo "Manifest file not found: $FILE"
