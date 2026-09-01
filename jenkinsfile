@@ -69,11 +69,12 @@ pipeline {
                         set -e
                         export GIT_SSH_COMMAND="ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no"
 
+                        rm -rf manifest-repo
                         git clone "$MANIFEST_REPO_URL" manifest-repo
                         cd manifest-repo
                         git checkout "$MANIFEST_REPO_BRANCH" || git checkout -b "$MANIFEST_REPO_BRANCH"
-                        git config user.name "Jenkins"
-                        git config user.email "testwmdev@gmail.com"
+                        git config user.name "Jenkins CI"
+                        git config user.email "jenkins@yourdomain.com"
 
                         FILE="$MANIFEST_FILE"
                         IMAGE_TAG="${branch}-${BUILD_NUMBER}"
