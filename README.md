@@ -130,3 +130,5 @@ go build -o api-golang .
 docker build -t books-go-api .
 
 ```
+
+# add info deploy
