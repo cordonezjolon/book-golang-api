@@ -29,12 +29,12 @@ pipeline {
             }
         }
 
-        stage('Clean & Build') {
-            steps {
-                // Clear dangling build cache that holds the wrong architecture
-                sh 'docker builder prune -f'
-            }
-        }
+        // stage('Clean & Build') {
+        //     steps {
+        //         // Clear dangling build cache that holds the wrong architecture
+        //         sh 'docker builder prune -f'
+        //     }
+        // }
 
         stage('Build our image') {
             steps {
