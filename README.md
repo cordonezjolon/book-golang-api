@@ -131,4 +131,4 @@ docker build -t books-go-api .
 
 ```
 
-# add info deploy
+# add info deploy - prune removed
