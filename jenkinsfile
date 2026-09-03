@@ -29,18 +29,12 @@ pipeline {
             }
         }
 
-        // stage('Clean & Build') {
-        //     steps {
-        //         // Clear dangling build cache that holds the wrong architecture
-        //         sh 'docker builder prune -f'
-        //     }
-        // }
-
         stage('Build our image') {
             steps {
                 script {
                     branch = env.GIT_BRANCH.replaceFirst(/^origin\//, '').replaceAll('/', '-')
-                    def envMap = ['develop': 'dev', 'staging': 'stage'] // 'main': 'prod' added later
+                    env.MANIFEST_REPO_BRANCH = branch 
+                    def envMap = ['develop': 'dev', 'stage': 'stage'] // 'main': 'prod' added later
                     targetEnv = envMap[branch]
                     imageTag = "${branch}-${env.BUILD_NUMBER}"
                     app = docker.build("${DOCKERHUB_CREDS_USR}/${APP_IMAGE.split('/')[-1]}:${imageTag}", "--platform linux/amd64 .")
